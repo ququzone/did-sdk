@@ -39,14 +39,14 @@ type (
 	}
 
 	VerifiableCredential struct {
-		Context           []string           `json:"@context,omitempty"`
-		ID                string             `json:"id,omitempty"`
-		Type              []string           `json:"type,omitempty"`
-		Issuer            string             `json:"issuer,omitempty"`
-		IssuanceDate      string             `json:"issuanceDate,omitempty"`
-		ExpirationDate    string             `json:"expirationDate,omitempty"`
-		CredentialSubject *CredentialSubject `json:"credentialSubject,omitempty"`
-		Proof             *Proof             `json:"proof,omitempty"`
+		Context           []string          `json:"@context,omitempty"`
+		ID                string            `json:"id,omitempty"`
+		Type              []string          `json:"type,omitempty"`
+		Issuer            string            `json:"issuer,omitempty"`
+		IssuanceDate      string            `json:"issuanceDate,omitempty"`
+		ExpirationDate    string            `json:"expirationDate,omitempty"`
+		CredentialSubject CredentialSubject `json:"credentialSubject,omitempty"`
+		Proof             *Proof            `json:"proof,omitempty"`
 	}
 )
 
@@ -171,4 +171,13 @@ func (mi *Pair) UnmarshalJSON(b []byte) error {
 	}
 	mi.Value = v
 	return nil
+}
+
+func StringToVerifiableCredential(data string) (*VerifiableCredential, error) {
+	var vc VerifiableCredential
+
+	if err := json.Unmarshal([]byte(data), &vc); err != nil {
+		return nil, err
+	}
+	return &vc, nil
 }

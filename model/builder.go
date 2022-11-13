@@ -45,7 +45,7 @@ func NewVerifiableCredentialBuilder(issuer, holder string) *VerifiableCredential
 			},
 			Issuer:       issuer,
 			IssuanceDate: time.Now().Format("2006-01-02T15:04:05Z"),
-			CredentialSubject: &CredentialSubject{
+			CredentialSubject: CredentialSubject{
 				Pair{Key: "id", Value: holder},
 			},
 		},
@@ -61,7 +61,7 @@ func (b *VerifiableCredentialBuilder) AddType(typeS string) {
 }
 
 func (b *VerifiableCredentialBuilder) AddCredentialSubject(pair Pair) {
-	*b.CredentialSubject = append(*b.CredentialSubject, pair)
+	b.CredentialSubject = append(b.CredentialSubject, pair)
 }
 
 func (b *VerifiableCredentialBuilder) Build() *VerifiableCredential {
@@ -108,7 +108,10 @@ func NewVerifiablePresentationBuilder(holder string) *VerifiablePresentationBuil
 }
 
 func (b *VerifiablePresentationBuilder) AddVerifiableCredential(vc *VerifiableCredential) {
-	b.VerifiableCredential = append(b.VerifiableCredential, vc)
+	b.VerifiableCredential = append(
+		b.VerifiableCredential,
+		vc,
+	)
 }
 
 func (b *VerifiablePresentationBuilder) SignSecp256k1HashProof(privateKey *ecdsa.PrivateKey) (*VerifiablePresentation, error) {

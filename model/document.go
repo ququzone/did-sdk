@@ -150,3 +150,12 @@ func NewDIDDoc(publicKey string) (*Doc, error) {
 	doc.AssertionMethod = []verificationMethodSet{key0}
 	return doc, nil
 }
+
+func StringToDocument(data string) (*Doc, error) {
+	var doc Doc
+
+	if err := json.Unmarshal([]byte(data), &doc); err != nil {
+		return nil, err
+	}
+	return &doc, nil
+}

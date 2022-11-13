@@ -12,12 +12,12 @@ import (
 )
 
 type VerifiablePresentation struct {
-	Context              []string      `json:"@context,omitempty"`
-	ID                   string        `json:"id,omitempty"`
-	Holder               string        `json:"holder,omitempty"`
-	Type                 []string      `json:"type" validate:"required"`
-	VerifiableCredential []interface{} `json:"verifiableCredential,omitempty"`
-	Proof                *Proof        `json:"proof,omitempty"`
+	Context              []string                `json:"@context,omitempty"`
+	ID                   string                  `json:"id,omitempty"`
+	Holder               string                  `json:"holder,omitempty"`
+	Type                 []string                `json:"type" validate:"required"`
+	VerifiableCredential []*VerifiableCredential `json:"verifiableCredential,omitempty"`
+	Proof                *Proof                  `json:"proof,omitempty"`
 }
 
 func (vp *VerifiablePresentation) Bytes() ([]byte, error) {
@@ -73,5 +73,14 @@ func (vc *VerifiablePresentation) VerifyByPrimary() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return bytes.Equal(common.FromHex(vc.Holder[7:])[:], address[:]), nil
+	return bytes.Equal(common.FromHex(vc.Holder[7:]), address[:]), nil
+}
+
+func StringToVerifiablePresentation(data string) (*VerifiablePresentation, error) {
+	var vp VerifiablePresentation
+
+	if err := json.Unmarshal([]byte(data), &vp); err != nil {
+		return nil, err
+	}
+	return &vp, nil
 }
