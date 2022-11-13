@@ -14,7 +14,9 @@ import (
 )
 
 var (
-	errEmptyProof = errors.New("empty proof")
+	errEmptyProof   = errors.New("empty proof")
+	errInvalidProof = errors.New("invalid proof")
+	errFakeIssuer   = errors.New("fake issuer")
 )
 
 type (

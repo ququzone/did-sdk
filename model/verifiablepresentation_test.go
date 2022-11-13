@@ -73,7 +73,9 @@ func TestVpVerifyByPrimary(t *testing.T) {
 	t.Log(vp.Json())
 
 	// verify vp
-	verified, err = vp.VerifyByPrimary()
+	verified, err = vp.VerifyByPrimary(func(vc *VerifiableCredential) (bool, error) {
+		return vc.CredentialSubject.Get("readStreamData") == "allow", nil
+	})
 	r.Nil(err)
 	r.True(verified)
 }
@@ -138,7 +140,9 @@ func TestStringToVerifiableCredential(t *testing.T) {
 		vp.VerifiableCredential[0].CredentialSubject.Get("id"),
 	)
 
-	verified, err := vp.VerifyByPrimary()
+	verified, err := vp.VerifyByPrimary(func(vc *VerifiableCredential) (bool, error) {
+		return vc.CredentialSubject.Get("readStreamData") == "allow", nil
+	})
 	r.Nil(err)
 	r.True(verified)
 }

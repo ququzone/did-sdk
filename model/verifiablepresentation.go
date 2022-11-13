@@ -48,11 +48,11 @@ func (vp *VerifiablePresentation) Hash() ([]byte, error) {
 	return crypto.Keccak256(data), nil
 }
 
-func (vc *VerifiablePresentation) VerifyByPrimary() (bool, error) {
-	if vc.Proof.ProofValue == "" {
+func (vp *VerifiablePresentation) VerifyByPrimary(vcv func(*VerifiableCredential) (bool, error)) (bool, error) {
+	if vp.Proof.ProofValue == "" {
 		return false, errEmptyProof
 	}
-	hash, err := vc.Hash()
+	hash, err := vp.Hash()
 	if err != nil {
 		return false, err
 	}
@@ -61,7 +61,7 @@ func (vc *VerifiablePresentation) VerifyByPrimary() (bool, error) {
 	hasher.Write([]byte(msg))
 	hash = hasher.Sum(nil)
 
-	pubBytes, err := crypto.Ecrecover(hash, base58.Decode(vc.Proof.ProofValue))
+	pubBytes, err := crypto.Ecrecover(hash, base58.Decode(vp.Proof.ProofValue))
 	if err != nil {
 		return false, err
 	}
@@ -73,7 +73,22 @@ func (vc *VerifiablePresentation) VerifyByPrimary() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return bytes.Equal(common.FromHex(vc.Holder[7:]), address[:]), nil
+	if !bytes.Equal(common.FromHex(vp.Holder[7:]), address[:]) {
+		return false, errInvalidProof
+	}
+	for _, vc := range vp.VerifiableCredential {
+		if valid, err := vc.VerifyByPrimary(); !valid || err != nil {
+			return false, err
+		}
+		if vc.CredentialSubject.Get("id") != vp.Holder {
+			return false, errFakeIssuer
+		}
+		if valid, err := vcv(vc); !valid || err != nil {
+			return false, err
+		}
+	}
+
+	return true, nil
 }
 
 func StringToVerifiablePresentation(data string) (*VerifiablePresentation, error) {
