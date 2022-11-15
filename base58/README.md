@@ -1,6 +1,8 @@
 base58
 ==========
 
+> Just copy from [!btcd](https://github.com/btcsuite/btcd) to adapt version dismatch
+
 [![Build Status](http://img.shields.io/travis/btcsuite/btcutil.svg)](https://travis-ci.org/btcsuite/btcutil)
 [![ISC License](http://img.shields.io/badge/license-ISC-blue.svg)](http://copyfree.org)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/btcsuite/btcd/btcutil/base58)
