@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/btcsuite/btcutil/base58"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ququzone/did-sdk/base58"
 	"golang.org/x/crypto/sha3"
 )
 
