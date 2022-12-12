@@ -80,6 +80,48 @@ func TestVpVerifyByPrimary(t *testing.T) {
 	r.True(verified)
 }
 
+func TestVpVerify(t *testing.T) {
+	r := require.New(t)
+
+	resolver := NewMemoryResolver()
+
+	// generate did document
+	doc1, err := GenerateDocument()
+	r.Nil(err)
+	doc2, err := GenerateDocument()
+	r.Nil(err)
+	resolver.Add(doc1.Doc)
+	resolver.Add(doc2.Doc)
+
+	// issue vc
+	vcb := NewVerifiableCredentialBuilder(doc1.ID, doc2.ID)
+	vcb.AddContext(VerifiableCredentialsW3bstreamContext)
+	vcb.AddType(VerifiableCredentialsW3bstreamContext)
+	vcb.AddCredentialSubject(Pair{Key: "readStreamData", Value: "allow"})
+	vc, err := vcb.SignSecp256k1HashProof(doc1.PrivateKey)
+	r.Nil(err)
+	t.Log(vc.Json())
+
+	// verify vc
+	verified, err := vc.Verify(resolver)
+	r.Nil(err)
+	r.True(verified)
+
+	// prepare vp
+	vpb := NewVerifiablePresentationBuilder(doc2.ID)
+	vpb.AddVerifiableCredential(vc)
+	vp, err := vpb.SignSecp256k1HashProof(doc2.PrivateKey)
+	r.Nil(err)
+	t.Log(vp.Json())
+
+	// verify vp
+	verified, err = vp.Verify(resolver, func(vc *VerifiableCredential) (bool, error) {
+		return vc.CredentialSubject.Get("readStreamData") == "allow", nil
+	})
+	r.Nil(err)
+	r.True(verified)
+}
+
 func TestStringToVerifiableCredential(t *testing.T) {
 	vps := `{
 		"@context": [

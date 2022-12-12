@@ -14,12 +14,17 @@ func NewMemoryResolver() *MemoryResolver {
 	}
 }
 
-func (r *MemoryResolver) Add(pubkey string) (string, error) {
+func (r *MemoryResolver) AddByPubkey(pubkey string) (string, error) {
 	doc, err := NewDIDDoc(pubkey)
 	if err != nil {
 		return "", err
 	}
 
+	r.store[doc.ID] = doc
+	return doc.ID, nil
+}
+
+func (r *MemoryResolver) Add(doc *Doc) (string, error) {
 	r.store[doc.ID] = doc
 	return doc.ID, nil
 }

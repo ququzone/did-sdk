@@ -70,7 +70,7 @@ func TestVerify(t *testing.T) {
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	r.True(ok)
 	address := crypto.PubkeyToAddress(*publicKeyECDSA)
-	id, err := resolver.Add(hex.EncodeToString(crypto.FromECDSAPub(publicKeyECDSA)))
+	id, err := resolver.AddByPubkey(hex.EncodeToString(crypto.FromECDSAPub(publicKeyECDSA)))
 	r.Nil(err)
 	r.EqualValues(DIDPrefix+address.Hex(), id)
 
