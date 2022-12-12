@@ -117,6 +117,15 @@ func (doc *Doc) RemoveService(tag string) error {
 	return nil
 }
 
+func (doc *Doc) GetVerificationMethod(id string) *verificationMethod {
+	for _, method := range doc.VerificationMethod {
+		if method.ID == id {
+			return &method
+		}
+	}
+	return nil
+}
+
 func NewDIDDoc(publicKey string) (*Doc, error) {
 	pubBytes, err := hex.DecodeString(publicKey)
 	if err != nil {

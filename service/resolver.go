@@ -13,10 +13,6 @@ var (
 	ErrUnsupportedMethod = errors.New("unsupported method")
 )
 
-type Resolver interface {
-	Fetch(id string) (*model.Doc, error)
-}
-
 type IoTexResolver struct {
 	endpoint string
 }

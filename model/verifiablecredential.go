@@ -14,9 +14,10 @@ import (
 )
 
 var (
-	errEmptyProof   = errors.New("empty proof")
-	errInvalidProof = errors.New("invalid proof")
-	errFakeIssuer   = errors.New("fake issuer")
+	errEmptyProof              = errors.New("empty proof")
+	errInvalidProof            = errors.New("invalid proof")
+	errFakeIssuer              = errors.New("fake issuer")
+	errEmptyVerificationMethod = errors.New("empty verification method")
 )
 
 type (
@@ -108,6 +109,42 @@ func (vc *VerifiableCredential) VerifyByPrimary() (bool, error) {
 		return false, err
 	}
 	return bytes.Equal(common.FromHex(vc.Issuer[7:])[:], address[:]), nil
+}
+
+func (vc *VerifiableCredential) Verify(resolver Resolver) (bool, error) {
+	if vc.Proof.ProofValue == "" {
+		return false, errEmptyProof
+	}
+
+	doc, err := resolver.Fetch(vc.Issuer)
+	if err != nil {
+		return false, err
+	}
+	vm := doc.GetVerificationMethod(vc.Proof.VerificationMethod)
+	if vm == nil {
+		return false, errEmptyVerificationMethod
+	}
+
+	hash, err := vc.Hash()
+	if err != nil {
+		return false, err
+	}
+	msg := fmt.Sprintf("\x19Ethereum Signed Message:\n32%s", string(hash))
+	hasher := sha3.NewLegacyKeccak256()
+	hasher.Write([]byte(msg))
+	hash = hasher.Sum(nil)
+
+	pubBytes, err := crypto.Ecrecover(hash, base58.Decode(vc.Proof.ProofValue))
+	if err != nil {
+		return false, err
+	}
+	pubKey, err := crypto.UnmarshalPubkey(pubBytes)
+	if err != nil {
+		return false, err
+	}
+	compressedPubKey := crypto.CompressPubkey(pubKey)
+
+	return base58.Encode(compressedPubKey) == vm.PublicKeyBase58, nil
 }
 
 func (cs CredentialSubject) Len() int {

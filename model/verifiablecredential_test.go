@@ -2,6 +2,7 @@ package model
 
 import (
 	"crypto/ecdsa"
+	"encoding/hex"
 	"encoding/json"
 	"testing"
 
@@ -54,6 +55,38 @@ func TestVerifyByPrimary(t *testing.T) {
 	t.Log(vc.Json())
 
 	verified, err := vc.VerifyByPrimary()
+	r.Nil(err)
+	r.True(verified)
+}
+
+func TestVerify(t *testing.T) {
+	r := require.New(t)
+
+	resolver := NewMemoryResolver()
+
+	privateKey, err := crypto.GenerateKey()
+	r.Nil(err)
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	r.True(ok)
+	address := crypto.PubkeyToAddress(*publicKeyECDSA)
+	id, err := resolver.Add(hex.EncodeToString(crypto.FromECDSAPub(publicKeyECDSA)))
+	r.Nil(err)
+	r.EqualValues(DIDPrefix+address.Hex(), id)
+
+	builder := NewVerifiableCredentialBuilder(
+		"did:io:"+address.Hex(),
+		"did:id:0x8d38efE45794D7FCeeA10b2262C23C12245959dB",
+	)
+	builder.AddContext(VerifiableCredentialsW3bstreamContext)
+	builder.AddType(VerifiableCredentialsW3bstreamContext)
+	builder.AddCredentialSubject(Pair{Key: "readStreamData", Value: "allow"})
+
+	vc, err := builder.SignSecp256k1HashProof(privateKey)
+	r.Nil(err)
+	t.Log(vc.Json())
+
+	verified, err := vc.Verify(resolver)
 	r.Nil(err)
 	r.True(verified)
 }
